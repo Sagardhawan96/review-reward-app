@@ -2,7 +2,7 @@
   if (window.ReviewRewardLoaded) return;
   window.ReviewRewardLoaded = true;
 
-  const APP_URL = 'https://localhost:3000';
+ const APP_URL = 'https://review-reward-app-production.up.railway.app';
 
   function getOrderId() {
     const match = window.location.pathname.match(/orders\/([^/?]+)/);
