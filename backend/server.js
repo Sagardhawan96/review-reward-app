@@ -25,7 +25,7 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', app: 'ReviewReward' });
 });
 
-app.delete('/api/test/reset', (req, res) => {
+app.get('/api/test/reset', (req, res) => {
   db.run('DELETE FROM reviews').then(() => {
     db.run('DELETE FROM discount_codes').then(() => {
       res.json({ success: true, message: 'Test data cleared' });

@@ -1,7 +1,8 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
-const db = new sqlite3.Database(path.join(__dirname, 'reviewreward.db'));
+const dbPath = path.join(__dirname, 'reviewreward.db');
+const db = new sqlite3.Database(dbPath);
 
 db.serialize(() => {
   db.run(`CREATE TABLE IF NOT EXISTS shops (
@@ -48,18 +49,18 @@ db.serialize(() => {
   )`);
 });
 
-db.get = (sql, params) => new Promise((resolve, reject) => {
-  db.get(sql, params, (err, row) => err ? reject(err) : resolve(row));
-});
+const dbAsync = {
+  get: (sql, params = []) => new Promise((resolve, reject) => {
+    db.get(sql, params, (err, row) => err ? reject(err) : resolve(row));
+  }),
+  all: (sql, params = []) => new Promise((resolve, reject) => {
+    db.all(sql, params, (err, rows) => err ? reject(err) : resolve(rows));
+  }),
+  run: (sql, params = []) => new Promise((resolve, reject) => {
+    db.run(sql, params, function(err) {
+      err ? reject(err) : resolve(this);
+    });
+  })
+};
 
-db.all = (sql, params) => new Promise((resolve, reject) => {
-  db.all(sql, params, (err, rows) => err ? reject(err) : resolve(rows));
-});
-
-db.run = (sql, params) => new Promise((resolve, reject) => {
-  db.run(sql, params, function(err) {
-    err ? reject(err) : resolve(this);
-  });
-});
-
-module.exports = db;
+module.exports = dbAsync;
