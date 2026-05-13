@@ -19,7 +19,6 @@ router.get('/', (req, res) => {
 
   console.log('Starting auth for shop:', shop);
   console.log('Redirect URI:', redirectUri);
-  console.log('APP_URL:', APP_URL);
 
   const installUrl = `https://${shop}/admin/oauth/authorize?client_id=${SHOPIFY_API_KEY}&scope=${SCOPES}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${nonce}`;
 
@@ -38,16 +37,16 @@ router.get('/callback', async (req, res) => {
 
     const accessToken = tokenRes.data.access_token;
 
-    const existingShop = db.prepare('SELECT * FROM shops WHERE shop_domain = ?').get(shop);
+    const existingShop = await db.get('SELECT * FROM shops WHERE shop_domain = ?', [shop]);
     if (existingShop) {
-      db.prepare('UPDATE shops SET access_token = ? WHERE shop_domain = ?').run(accessToken, shop);
+      await db.run('UPDATE shops SET access_token = ? WHERE shop_domain = ?', [accessToken, shop]);
     } else {
-      db.prepare('INSERT INTO shops (shop_domain, access_token) VALUES (?, ?)').run(shop, accessToken);
+      await db.run('INSERT INTO shops (shop_domain, access_token) VALUES (?, ?)', [shop, accessToken]);
     }
 
-    const existingSettings = db.prepare('SELECT * FROM reward_settings WHERE shop_domain = ?').get(shop);
+    const existingSettings = await db.get('SELECT * FROM reward_settings WHERE shop_domain = ?', [shop]);
     if (!existingSettings) {
-      db.prepare('INSERT INTO reward_settings (shop_domain) VALUES (?)').run(shop);
+      await db.run('INSERT INTO reward_settings (shop_domain) VALUES (?)', [shop]);
     }
 
     console.log(`App installed for ${shop}`);
@@ -55,7 +54,7 @@ router.get('/callback', async (req, res) => {
 
   } catch (err) {
     console.error('Auth error:', err.message);
-    res.status(500).send('Installation failed. Please try again.');
+    res.status(500).send('Installation failed: ' + err.message);
   }
 });
 
