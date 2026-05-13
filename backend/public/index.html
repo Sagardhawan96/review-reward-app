@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ReviewReward — Merchant Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #F7F6F3;
+      --surface: #FFFFFF;
+      --sidebar: #111110;
+      --text-primary: #111110;
+      --text-secondary: #6B6B68;
+      --text-muted: #A8A8A4;
+      --border: #E8E7E3;
+      --accent: #2D6A4F;
+      --accent-light: #E8F5EE;
+      --accent-text: #1B4332;
+      --amber: #B45309;
+      --amber-light: #FEF3C7;
+      --indigo: #3730A3;
+      --indigo-light: #EEF2FF;
+      --radius: 10px;
+      --radius-lg: 14px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 220px;
+      min-height: 100vh;
+      background: var(--sidebar);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+    }
+
+    .sidebar-brand {
+      padding: 28px 24px 24px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .brand-name {
+      font-family: 'Instrument Serif', serif;
+      font-size: 20px;
+      color: #fff;
+      letter-spacing: -0.3px;
+    }
+
+    .brand-tag {
+      font-size: 11px;
+      color: rgba(255,255,255,0.35);
+      margin-top: 2px;
+      font-weight: 300;
+    }
+
+    .sidebar-nav {
+      padding: 16px 12px;
+      flex: 1;
+    }
+
+    .nav-label {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.25);
+      padding: 0 12px;
+      margin-bottom: 6px;
+      margin-top: 16px;
+      text-transform: uppercase;
+    }
+
+    .nav-label:first-child { margin-top: 0; }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: 7px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.5);
+      cursor: pointer;
+      transition: all 0.15s;
+      font-weight: 400;
+    }
+
+    .nav-item:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.8); }
+    .nav-item.active { background: rgba(255,255,255,0.1); color: #fff; }
+
+    .nav-icon {
+      width: 16px;
+      height: 16px;
+      opacity: 0.7;
+      flex-shrink: 0;
+    }
+
+    .sidebar-footer {
+      padding: 16px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .shop-pill {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 7px;
+      padding: 10px 12px;
+    }
+
+    .shop-pill-label { font-size: 10px; color: rgba(255,255,255,0.3); margin-bottom: 4px; }
+    .shop-pill-domain { font-size: 12px; color: rgba(255,255,255,0.7); word-break: break-all; }
+
+    /* ── Main ── */
+    .main {
+      margin-left: 220px;
+      flex: 1;
+      min-height: 100vh;
+    }
+
+    /* ── Topbar ── */
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .topbar-left { display: flex; align-items: center; gap: 16px; }
+    .page-title { font-size: 15px; font-weight: 500; color: var(--text-primary); }
+
+    .shop-switcher {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .shop-switcher input {
+      border: 1px solid var(--border);
+      background: var(--bg);
+      border-radius: 7px;
+      padding: 7px 12px;
+      font-size: 13px;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text-primary);
+      width: 280px;
+      transition: border-color 0.15s;
+    }
+
+    .shop-switcher input:focus { outline: none; border-color: var(--accent); }
+    .shop-switcher input::placeholder { color: var(--text-muted); }
+
+    .btn {
+      padding: 7px 16px;
+      border-radius: 7px;
+      font-size: 13px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s;
+    }
+
+    .btn-primary { background: var(--sidebar); color: #fff; }
+    .btn-primary:hover { background: #2a2a28; }
+    .btn-save { background: var(--accent); color: #fff; }
+    .btn-save:hover { background: #235c43; }
+
+    /* ── Content ── */
+    .content {
+      padding: 32px;
+    }
+
+    /* ── Section header ── */
+    .section-header {
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      font-family: 'Instrument Serif', serif;
+      font-size: 22px;
+      color: var(--text-primary);
+      font-weight: 400;
+      letter-spacing: -0.3px;
+    }
+
+    .section-sub {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 3px;
+    }
+
+    /* ── Stats ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px 22px;
+      position: relative;
+      overflow: hidden;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    .stat-card:nth-child(1) { animation-delay: 0.05s; }
+    .stat-card:nth-child(2) { animation-delay: 0.1s; }
+    .stat-card:nth-child(3) { animation-delay: 0.15s; }
+    .stat-card:nth-child(4) { animation-delay: 0.2s; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .stat-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 14px;
+    }
+
+    .stat-icon svg { width: 16px; height: 16px; }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+      font-weight: 400;
+    }
+
+    .stat-value {
+      font-family: 'Instrument Serif', serif;
+      font-size: 30px;
+      color: var(--text-primary);
+      line-height: 1;
+      letter-spacing: -0.5px;
+    }
+
+    .stat-delta {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      margin-bottom: 20px;
+      animation: fadeUp 0.4s ease 0.25s both;
+    }
+
+    .card-header {
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .card-sub {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .card-body { padding: 24px; }
+
+    /* ── Settings ── */
+    .settings-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .field { display: flex; flex-direction: column; gap: 6px; }
+
+    .field-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      letter-spacing: 0.02em;
+    }
+
+    .field-input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .field-prefix, .field-suffix {
+      position: absolute;
+      font-size: 13px;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    .field-prefix { left: 12px; }
+    .field-suffix { right: 12px; }
+
+    .field input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 500;
+      color: var(--text-primary);
+      background: var(--bg);
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .field input:focus { outline: none; border-color: var(--accent); background: #fff; }
+    .has-prefix input { padding-left: 26px; }
+    .has-suffix input { padding-right: 32px; }
+
+    .field-hint {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .tier-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: var(--radius);
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .tier-1-ind { background: var(--amber-light); color: var(--amber); }
+    .tier-2-ind { background: var(--indigo-light); color: var(--indigo); }
+
+    .settings-footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .save-status {
+      font-size: 13px;
+      color: var(--accent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .save-status.visible { opacity: 1; }
+
+    /* ── Reviews table ── */
+    .table-wrap { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead th {
+      text-align: left;
+      padding: 10px 16px;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    tbody td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--text-primary);
+      vertical-align: middle;
+    }
+
+    tbody tr:last-child td { border-bottom: none; }
+
+    tbody tr {
+      transition: background 0.1s;
+    }
+
+    tbody tr:hover { background: var(--bg); }
+
+    .stars-display {
+      display: flex;
+      gap: 1px;
+    }
+
+    .star-filled { color: #F59E0B; font-size: 13px; }
+    .star-empty { color: #E5E7EB; font-size: 13px; }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .badge-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+    }
+
+    .badge-text { background: var(--amber-light); color: var(--amber); }
+    .badge-text .badge-dot { background: var(--amber); }
+    .badge-photo { background: var(--indigo-light); color: var(--indigo); }
+    .badge-photo .badge-dot { background: var(--indigo); }
+
+    .code-chip {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 11px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 3px 8px;
+      color: var(--text-secondary);
+      letter-spacing: 0.05em;
+    }
+
+    .review-text-cell {
+      max-width: 220px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--text-secondary);
+    }
+
+    .date-cell { color: var(--text-muted); white-space: nowrap; }
+
+    .empty-state {
+      padding: 60px 24px;
+      text-align: center;
+    }
+
+    .empty-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--bg);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 14px;
+    }
+
+    .empty-title { font-size: 14px; font-weight: 500; color: var(--text-secondary); margin-bottom: 4px; }
+    .empty-sub { font-size: 13px; color: var(--text-muted); }
+
+    /* ── Rating bar chart ── */
+    .rating-bars { display: flex; flex-direction: column; gap: 8px; }
+
+    .rating-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+    }
+
+    .rating-label { width: 12px; color: var(--text-secondary); text-align: right; flex-shrink: 0; }
+
+    .rating-bar-bg {
+      flex: 1;
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .rating-bar-fill {
+      height: 100%;
+      background: #F59E0B;
+      border-radius: 3px;
+      transition: width 0.6s ease;
+    }
+
+    .rating-count { width: 24px; color: var(--text-muted); font-size: 11px; }
+
+    /* ── Two col layout ── */
+    .two-col { display: grid; grid-template-columns: 1fr 280px; gap: 20px; align-items: start; }
+
+    /* ── No shop state ── */
+    .no-shop-overlay {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 400px;
+      text-align: center;
+    }
+
+    .no-shop-icon {
+      width: 56px;
+      height: 56px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    .no-shop-title {
+      font-family: 'Instrument Serif', serif;
+      font-size: 20px;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+
+    .no-shop-sub { font-size: 13px; color: var(--text-secondary); max-width: 280px; line-height: 1.6; }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-name">ReviewReward</div>
+    <div class="brand-tag">Merchant Dashboard</div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-label">Overview</div>
+    <div class="nav-item active" onclick="showSection('overview')">
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+      Overview
+    </div>
+    <div class="nav-item" onclick="showSection('reviews')">
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+      Reviews
+    </div>
+    <div class="nav-label">Configuration</div>
+    <div class="nav-item" onclick="showSection('settings')">
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"/></svg>
+      Reward settings
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="shop-pill">
+      <div class="shop-pill-label">Connected store</div>
+      <div class="shop-pill-domain" id="sidebar-domain">—</div>
+    </div>
+  </div>
+</aside>
+
+<!-- Main -->
+<div class="main">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="page-title" id="page-title">Overview</span>
+    </div>
+    <div class="shop-switcher">
+      <input type="text" id="shop-domain" placeholder="yourstore.myshopify.com" />
+      <button class="btn btn-primary" onclick="loadDashboard()">Connect</button>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+
+    <!-- No shop state -->
+    <div id="no-shop" class="no-shop-overlay">
+      <div class="no-shop-icon">
+        <svg width="24" height="24" fill="none" stroke="#A8A8A4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+      </div>
+      <div class="no-shop-title">Connect your store</div>
+      <div class="no-shop-sub">Enter your Shopify store domain above to load your reviews and reward settings.</div>
+    </div>
+
+    <!-- Overview section -->
+    <div id="section-overview" style="display:none">
+      <div class="section-header">
+        <div class="section-title">Good to see you</div>
+        <div class="section-sub">Here's how your review rewards are performing.</div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#F0FDF4">
+            <svg fill="none" stroke="#16A34A" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+          </div>
+          <div class="stat-label">Total reviews</div>
+          <div class="stat-value" id="stat-total">—</div>
+          <div class="stat-delta">All time</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#FFFBEB">
+            <svg fill="none" stroke="#D97706" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+          </div>
+          <div class="stat-label">Average rating</div>
+          <div class="stat-value" id="stat-avg">—</div>
+          <div class="stat-delta">Out of 5.0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#EEF2FF">
+            <svg fill="none" stroke="#4F46E5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          </div>
+          <div class="stat-label">Photo reviews</div>
+          <div class="stat-value" id="stat-photo">—</div>
+          <div class="stat-delta">Tier 2 — 10% reward</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#FFF7ED">
+            <svg fill="none" stroke="#EA580C" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          </div>
+          <div class="stat-label">Text reviews</div>
+          <div class="stat-value" id="stat-text">—</div>
+          <div class="stat-delta">Tier 1 — ₹200 reward</div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Recent reviews</div>
+              <div class="card-sub">Latest 5 submissions</div>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Customer</th>
+                  <th>Rating</th>
+                  <th>Review</th>
+                  <th>Type</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody id="recent-reviews-table">
+                <tr><td colspan="5"><div class="empty-state"><div class="empty-title">No reviews yet</div></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Rating breakdown</div>
+          </div>
+          <div class="card-body">
+            <div class="rating-bars" id="rating-bars">
+              ${[5,4,3,2,1].map(n => `
+                <div class="rating-row">
+                  <div class="rating-label">${n}</div>
+                  <div class="rating-bar-bg"><div class="rating-bar-fill" id="bar-${n}" style="width:0%"></div></div>
+                  <div class="rating-count" id="count-${n}">0</div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reviews section -->
+    <div id="section-reviews" style="display:none">
+      <div class="section-header">
+        <div class="section-title">All reviews</div>
+        <div class="section-sub">Every review submitted through your store.</div>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Rating</th>
+                <th>Review</th>
+                <th>Type</th>
+                <th>Discount code</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody id="all-reviews-table">
+              <tr><td colspan="6"><div class="empty-state"><div class="empty-title">No reviews yet</div><div class="empty-sub">Reviews will appear here once customers start submitting.</div></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings section -->
+    <div id="section-settings" style="display:none">
+      <div class="section-header">
+        <div class="section-title">Reward settings</div>
+        <div class="section-sub">Control what each tier of reviewer earns.</div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Tier 1 — Text review</div>
+            <div class="card-sub">Customer writes a review without a photo</div>
+          </div>
+          <div class="tier-indicator tier-1-ind">Fixed amount reward</div>
+        </div>
+        <div class="card-body">
+          <div class="settings-grid">
+            <div class="field">
+              <div class="field-label">Reward amount</div>
+              <div class="field-input-wrap has-prefix">
+                <span class="field-prefix">₹</span>
+                <input type="number" id="tier1-amount" placeholder="200" />
+              </div>
+              <div class="field-hint">Flat rupee amount credited as a discount code on their next order.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Tier 2 — Photo review</div>
+            <div class="card-sub">Customer writes a review and attaches at least one photo</div>
+          </div>
+          <div class="tier-indicator tier-2-ind">Percentage reward</div>
+        </div>
+        <div class="card-body">
+          <div class="settings-grid">
+            <div class="field">
+              <div class="field-label">Discount percentage</div>
+              <div class="field-input-wrap has-suffix">
+                <input type="number" id="tier2-percent" placeholder="10" />
+                <span class="field-suffix">%</span>
+              </div>
+              <div class="field-hint">Percentage off their entire next order. Applied at checkout automatically.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">General settings</div>
+        </div>
+        <div class="card-body">
+          <div class="settings-grid">
+            <div class="field">
+              <div class="field-label">Code validity period</div>
+              <div class="field-input-wrap has-suffix">
+                <input type="number" id="validity-days" placeholder="30" />
+                <span class="field-suffix">days</span>
+              </div>
+              <div class="field-hint">How many days before the discount code expires. 30 days recommended.</div>
+            </div>
+            <div class="field">
+              <div class="field-label">Minimum review length</div>
+              <div class="field-input-wrap has-suffix">
+                <input type="number" id="min-chars" placeholder="50" />
+                <span class="field-suffix">chars</span>
+              </div>
+              <div class="field-hint">Prevents low-effort one-word reviews from earning rewards.</div>
+            </div>
+          </div>
+        </div>
+        <div class="settings-footer">
+          <button class="btn btn-save" onclick="saveSettings()">Save all settings</button>
+          <div class="save-status" id="save-status">Settings saved successfully</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  let currentShop = '';
+  let allReviews = [];
+  let allStats = {};
+
+  function showSection(name) {
+    ['overview','reviews','settings'].forEach(s => {
+      document.getElementById(`section-${s}`).style.display = 'none';
+    });
+    document.getElementById(`section-${name}`).style.display = 'block';
+    document.getElementById('no-shop').style.display = 'none';
+
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+
+    const titles = { overview: 'Overview', reviews: 'Reviews', settings: 'Reward settings' };
+    document.getElementById('page-title').textContent = titles[name];
+  }
+
+  function starsHTML(rating) {
+    return `<div class="stars-display">
+      ${'<span class="star-filled">★</span>'.repeat(rating)}
+      ${'<span class="star-empty">★</span>'.repeat(5 - rating)}
+    </div>`;
+  }
+
+  function formatDate(dateStr) {
+    return new Date(dateStr).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  function renderReviewRow(r, showCode = false) {
+    return `<tr>
+      <td style="font-size:13px;color:var(--text-secondary)">${r.customer_email}</td>
+      <td>${starsHTML(r.rating)}</td>
+      <td><div class="review-text-cell">${r.review_text}</div></td>
+      <td><span class="badge ${r.tier === 2 ? 'badge-photo' : 'badge-text'}">
+        <span class="badge-dot"></span>${r.tier === 2 ? 'Photo' : 'Text'}
+      </span></td>
+      ${showCode ? `<td><span class="code-chip">${r.code || '—'}</span></td>` : ''}
+      <td class="date-cell">${formatDate(r.created_at)}</td>
+    </tr>`;
+  }
+
+  async function loadDashboard() {
+    const shop = document.getElementById('shop-domain').value.trim();
+    if (!shop) return alert('Please enter your shop domain');
+    currentShop = shop;
+
+    try {
+      const [reviewsRes, settingsRes] = await Promise.all([
+        fetch(`/api/admin/reviews/${shop}`),
+        fetch(`/api/settings/${shop}`)
+      ]);
+
+      const reviewData = await reviewsRes.json();
+      const settings = await settingsRes.json();
+
+      allReviews = reviewData.reviews || [];
+      allStats = reviewData.stats || {};
+
+      document.getElementById('sidebar-domain').textContent = shop;
+
+      document.getElementById('stat-total').textContent = allStats.total ?? 0;
+      document.getElementById('stat-avg').textContent = allStats.avgRating ?? '—';
+      document.getElementById('stat-photo').textContent = allStats.withPhoto ?? 0;
+      document.getElementById('stat-text').textContent = allStats.textOnly ?? 0;
+
+      const total = allStats.total || 1;
+      const byRating = allStats.byRating || [];
+      byRating.forEach(r => {
+        const bar = document.getElementById(`bar-${r.rating}`);
+        const count = document.getElementById(`count-${r.rating}`);
+        if (bar) bar.style.width = `${Math.round((r.count / total) * 100)}%`;
+        if (count) count.textContent = r.count;
+      });
+
+      const recentSlice = allReviews.slice(0, 5);
+      document.getElementById('recent-reviews-table').innerHTML = recentSlice.length
+        ? recentSlice.map(r => renderReviewRow(r, false)).join('')
+        : '<tr><td colspan="5"><div class="empty-state"><div class="empty-title">No reviews yet</div></div></td></tr>';
+
+      document.getElementById('all-reviews-table').innerHTML = allReviews.length
+        ? allReviews.map(r => renderReviewRow(r, true)).join('')
+        : '<tr><td colspan="6"><div class="empty-state"><div class="empty-title">No reviews yet</div><div class="empty-sub">Reviews will appear here once customers start submitting.</div></div></td></tr>';
+
+      document.getElementById('tier1-amount').value = settings.tier1_amount ?? 200;
+      document.getElementById('tier2-percent').value = settings.tier2_percent ?? 10;
+      document.getElementById('validity-days').value = settings.validity_days ?? 30;
+      document.getElementById('min-chars').value = settings.min_review_chars ?? 50;
+
+      document.getElementById('no-shop').style.display = 'none';
+      document.getElementById('section-overview').style.display = 'block';
+
+    } catch (err) {
+      alert('Could not connect. Make sure your server is running and the domain is correct.');
+    }
+  }
+
+  async function saveSettings() {
+    if (!currentShop) return alert('Please connect a shop first.');
+
+    const body = {
+      tier1_amount: parseInt(document.getElementById('tier1-amount').value),
+      tier2_percent: parseInt(document.getElementById('tier2-percent').value),
+      validity_days: parseInt(document.getElementById('validity-days').value),
+      min_review_chars: parseInt(document.getElementById('min-chars').value)
+    };
+
+    try {
+      const res = await fetch(`/api/settings/${currentShop}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+      if (data.success) {
+        const el = document.getElementById('save-status');
+        el.classList.add('visible');
+        setTimeout(() => el.classList.remove('visible'), 3000);
+      }
+    } catch (err) {
+      alert('Could not save settings.');
+    }
+  }
+</script>
+
+</body>
+</html>

@@ -13,7 +13,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../widget')));
-app.use(express.static(path.join(__dirname, '../dashboard')));
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/auth', authRoutes);
 app.use('/api/reviews', reviewRoutes);
