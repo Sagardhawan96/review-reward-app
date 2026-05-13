@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ReviewReward Test</title>
+</head>
+<body>
+  <h2>Test Review Submission</h2>
+  <form id="test-form">
+    <p><input type="text" id="shop" placeholder="Shop domain" value="sagar-review-test-2.myshopify.com" style="width:300px;padding:8px"></p>
+    <p><input type="text" id="order" placeholder="Order ID" value="TEST-001" style="width:300px;padding:8px"></p>
+    <p><input type="text" id="email" placeholder="Customer email" value="test@test.com" style="width:300px;padding:8px"></p>
+    <p><input type="number" id="rating" placeholder="Rating (1-5)" value="5" style="width:300px;padding:8px"></p>
+    <p><textarea id="review" style="width:300px;padding:8px;height:80px">This is a test review with enough characters to pass the minimum length requirement easily!</textarea></p>
+    <p><button type="button" onclick="submitReview()" style="padding:10px 20px;background:#6366f1;color:white;border:none;border-radius:6px;cursor:pointer">Submit Text Review (Tier 1)</button></p>
+  </form>
+  <div id="result" style="margin-top:20px;padding:16px;background:#f3f4f6;border-radius:8px;display:none"></div>
+
+  <script>
+    async function submitReview() {
+      const formData = new FormData();
+      formData.append('shopDomain', document.getElementById('shop').value);
+      formData.append('orderId', document.getElementById('order').value);
+      formData.append('customerEmail', document.getElementById('email').value);
+      formData.append('rating', document.getElementById('rating').value);
+      formData.append('reviewText', document.getElementById('review').value);
+
+      const result = document.getElementById('result');
+      result.style.display = 'block';
+      result.textContent = 'Submitting...';
+
+      try {
+        const res = await fetch('/api/reviews', { method: 'POST', body: formData });
+        const data = await res.json();
+        result.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+      } catch (err) {
+        result.textContent = 'Error: ' + err.message;
+      }
+    }
+  </script>
+</body>
+</html>
