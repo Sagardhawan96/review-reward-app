@@ -1,0 +1,10 @@
+api_version = "2024-07"
+
+[[extensions]]
+type = "ui_extension"
+name = "ReviewReward Thank You Widget"
+handle = "review-reward-thank-you"
+
+[[extensions.targeting]]
+module = "./src/index.jsx"
+target = "purchase.thank-you.block.render"
