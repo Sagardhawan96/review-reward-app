@@ -5,12 +5,24 @@
  const APP_URL = 'https://review-reward-app-production.up.railway.app';
 
   function getOrderId() {
+    // Shopify injects this on the order status / thank-you page
+    if (window.Shopify && window.Shopify.checkout && window.Shopify.checkout.order_id) {
+      return String(window.Shopify.checkout.order_id);
+    }
+    // Fallback: parse /orders/{id} from URL
     const match = window.location.pathname.match(/orders\/([^/?]+)/);
     return match ? match[1] : null;
   }
 
+  function getCustomerEmail() {
+    if (window.Shopify && window.Shopify.checkout && window.Shopify.checkout.email) {
+      return window.Shopify.checkout.email;
+    }
+    return window.RR_CUSTOMER_EMAIL || '';
+  }
+
   function getShopDomain() {
-    return window.Shopify ? window.Shopify.shop : window.location.hostname;
+    return (window.Shopify && window.Shopify.shop) ? window.Shopify.shop : window.location.hostname;
   }
 
   function injectStyles() {
@@ -156,7 +168,7 @@
   function init() {
     const shopDomain = getShopDomain();
     const orderId = getOrderId();
-    const customerEmail = window.RR_CUSTOMER_EMAIL || '';
+    const customerEmail = getCustomerEmail();
 
     if (!orderId) return;
 
