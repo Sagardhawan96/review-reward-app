@@ -2,13 +2,14 @@ const express = require('express');
 const crypto = require('crypto');
 const axios = require('axios');
 const db = require('../db');
+const { createPriceRules } = require('../utils/shopify');
 
 const router = express.Router();
 
 const SHOPIFY_API_KEY = process.env.SHOPIFY_API_KEY;
 const SHOPIFY_API_SECRET = process.env.SHOPIFY_API_SECRET;
 const APP_URL = process.env.APP_URL;
-const SCOPES = 'read_orders,write_discounts,read_customers,write_script_tags';
+const SCOPES = 'read_orders,write_price_rules,write_discounts,read_customers,write_script_tags';
 
 router.get('/', (req, res) => {
   const { shop } = req.query;
@@ -37,11 +38,29 @@ router.get('/callback', async (req, res) => {
 
     const accessToken = tokenRes.data.access_token;
 
+    // Create price rules for discount code tiers
+    let tier1Id = null;
+    let tier2Id = null;
+    try {
+      const rules = await createPriceRules(shop, accessToken);
+      tier1Id = rules.tier1Id;
+      tier2Id = rules.tier2Id;
+      console.log(`Price rules created — Tier1: ${tier1Id}, Tier2: ${tier2Id}`);
+    } catch (priceErr) {
+      console.error('Price rule creation failed:', priceErr.message);
+    }
+
     const existingShop = await db.get('SELECT * FROM shops WHERE shop_domain = ?', [shop]);
     if (existingShop) {
-      await db.run('UPDATE shops SET access_token = ? WHERE shop_domain = ?', [accessToken, shop]);
+      await db.run(
+        'UPDATE shops SET access_token = ?, price_rule_tier1_id = ?, price_rule_tier2_id = ? WHERE shop_domain = ?',
+        [accessToken, tier1Id, tier2Id, shop]
+      );
     } else {
-      await db.run('INSERT INTO shops (shop_domain, access_token) VALUES (?, ?)', [shop, accessToken]);
+      await db.run(
+        'INSERT INTO shops (shop_domain, access_token, price_rule_tier1_id, price_rule_tier2_id) VALUES (?, ?, ?, ?)',
+        [shop, accessToken, tier1Id, tier2Id]
+      );
     }
 
     const existingSettings = await db.get('SELECT * FROM reward_settings WHERE shop_domain = ?', [shop]);
