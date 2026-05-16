@@ -5,13 +5,12 @@ import {
   Heading,
   Text,
   Button,
-  TextArea,
+  TextField,
   Banner,
   Pressable,
   useOrder,
   useShop,
-  useBuyerIdentity,
-  useSettings,
+  useEmail,
 } from "@shopify/ui-extensions-react/checkout";
 import { useState } from "react";
 
@@ -24,14 +23,14 @@ export default reactExtension("purchase.thank-you.block.render", () => (
 function ReviewWidget() {
   const order = useOrder();
   const shop = useShop();
-  const buyer = useBuyerIdentity();
+  const email = useEmail();
 
   // Extract plain numeric order ID from GID (gid://shopify/Order/12345)
   const orderId = order?.id
     ? String(order.id).replace("gid://shopify/Order/", "")
     : null;
   const shopDomain = shop?.myshopifyDomain || "";
-  const customerEmail = buyer?.email || "";
+  const customerEmail = email || "";
 
   const [rating, setRating] = useState(0);
   const [hovered, setHovered] = useState(0);
@@ -113,7 +112,7 @@ function ReviewWidget() {
     <BlockStack spacing="base">
       <Heading>How was your order?</Heading>
       <Text appearance="subdued">
-        Leave a review and earn a reward — ₹200 off your next order!
+        Leave a review and earn a reward — get ₹200 off your next order!
       </Text>
 
       {/* Star Rating */}
@@ -122,8 +121,6 @@ function ReviewWidget() {
           <Pressable
             key={star}
             onPress={() => setRating(star)}
-            onPointerEnter={() => setHovered(star)}
-            onPointerLeave={() => setHovered(0)}
             accessibilityLabel={`Rate ${star} stars`}
           >
             <Text size="extraLarge">
@@ -133,12 +130,12 @@ function ReviewWidget() {
         ))}
       </InlineStack>
 
-      <TextArea
+      <TextField
         label="Your review"
+        multiline={4}
         placeholder="Tell others about your experience..."
         value={reviewText}
         onChange={(val) => setReviewText(val)}
-        rows={4}
       />
 
       {error ? (

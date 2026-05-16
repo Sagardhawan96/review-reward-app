@@ -1,5 +1,5 @@
 name = "ReviewReward"
-client_id = "REPLACE_WITH_SHOPIFY_API_KEY"
+client_id = "d6553797c6cfae4eca34d4490070e730"
 application_url = "https://review-reward-app-production.up.railway.app"
 embedded = false
 
