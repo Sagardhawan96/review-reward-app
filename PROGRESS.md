@@ -11,8 +11,10 @@
 
 ```
 Last session  : 2026-05-16
-Last completed: Fix deployed to Railway via GitHub push — write_price_rules scope + createPriceRules() now live
-Next task     : Gate 1A — Sagar must UNINSTALL then REINSTALL the app on sagar-review-test-2.myshopify.com, then verify price rules appear in Shopify Admin → Discounts
+Last completed: 1A + 1C fixes deployed — createPriceRules() + createScriptTag() both live in OAuth callback
+Next task     : Gate 1A + 1C — Sagar must UNINSTALL then REINSTALL the app on sagar-review-test-2.myshopify.com
+                Gate 1A: verify price rules appear in Shopify Admin → Discounts
+                Gate 1C: verify review widget appears on order confirmation page
 Active blocker: NONE — fix is live at https://review-reward-app-production.up.railway.app
 
 WHAT WAS FIXED THIS SESSION:
@@ -59,8 +61,8 @@ A code starting with `TXT-` must exist there. If not, this task is NOT done.
 ---
 
 ### 1C — Wire Widget Into Shopify Store Pages
-- [ ] After OAuth callback completes, call `POST /admin/api/script_tags.json`
-- [ ] Script tag points to `https://review-reward-app-production.up.railway.app/widget.js`
+- [x] After OAuth callback completes, call `POST /admin/api/script_tags.json`
+- [x] Script tag points to `https://review-reward-app-production.up.railway.app/widget.js`
 - [ ] Widget reads `Shopify.checkout.order_id` and `Shopify.checkout.email`
 - [ ] Test on dev store order confirmation page
 
