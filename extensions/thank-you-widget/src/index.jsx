@@ -2,140 +2,116 @@ import {
   reactExtension,
   BlockStack,
   InlineStack,
-  Heading,
   Text,
   Button,
   TextField,
   Banner,
-  Pressable,
-  useOrder,
+  useApi,
+  useSubscription,
   useShop,
-  useEmail,
 } from "@shopify/ui-extensions-react/checkout";
 import { useState } from "react";
 
-const APP_URL = "https://review-reward-app-production.up.railway.app";
+const BACKEND_URL = "https://review-reward-app-production.up.railway.app";
 
 export default reactExtension("purchase.thank-you.block.render", () => (
   <ReviewWidget />
 ));
 
 function ReviewWidget() {
-  const order = useOrder();
-  const shop = useShop();
-  const email = useEmail();
+  const api = useApi();
 
-  // Extract plain numeric order ID from GID (gid://shopify/Order/12345)
-  const orderId = order?.id
-    ? String(order.id).replace("gid://shopify/Order/", "")
-    : null;
-  const shopDomain = shop?.myshopifyDomain || "";
-  const customerEmail = email || "";
+  // purchase.thank-you.block.render exposes orderConfirmation (not 'order')
+  const orderConfirmation = useSubscription(api.orderConfirmation);
+  const shop = useShop();
 
   const [rating, setRating] = useState(0);
-  const [hovered, setHovered] = useState(0);
-  const [reviewText, setReviewText] = useState("");
+  const [comment, setComment] = useState("");
   const [submitted, setSubmitted] = useState(false);
-  const [discountCode, setDiscountCode] = useState("");
-  const [rewardMessage, setRewardMessage] = useState("");
+  const [discountCode, setDiscountCode] = useState(null);
+  const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
-  if (!orderId) return null;
+  // GID "gid://shopify/Order/12345" → "12345"
+  const rawId = orderConfirmation?.order?.id ?? "";
+  const orderId = rawId.includes("/") ? rawId.split("/").pop() : rawId;
 
-  async function handleSubmit() {
-    if (!rating) {
-      setError("Please select a star rating.");
-      return;
-    }
-    if (reviewText.trim().length < 10) {
-      setError("Please write at least 10 characters.");
-      return;
-    }
+  // Email may live on the order's contact email — no customer-data permission needed
+  const email = orderConfirmation?.order?.email ?? "";
+  const shopDomain = shop?.myshopifyDomain ?? "";
 
-    setError("");
+  const handleSubmit = async () => {
+    if (rating === 0 || loading) return;
     setLoading(true);
-
+    setError(null);
     try {
-      const body = new FormData();
-      body.append("shopDomain", shopDomain);
-      body.append("orderId", orderId);
-      body.append("customerEmail", customerEmail);
-      body.append("rating", String(rating));
-      body.append("reviewText", reviewText.trim());
-
-      const res = await fetch(`${APP_URL}/api/reviews`, {
+      const res = await fetch(`${BACKEND_URL}/api/reviews`, {
         method: "POST",
-        body,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          shopDomain,
+          orderId,
+          customerEmail: email || "unknown@checkout.extension",
+          rating,
+          reviewText: comment || "(no comment)",
+        }),
       });
       const data = await res.json();
-
-      if (data.success) {
-        setDiscountCode(data.code || "");
-        setRewardMessage(data.reward || "Thank you for your review!");
+      // Backend returns { code } (not discountCode)
+      const code = data.code || data.discountCode;
+      if (data.success && code) {
+        setDiscountCode(code);
+        setSubmitted(true);
+      } else if (data.success) {
+        // Review saved but discount code generation failed — still a win
+        setDiscountCode("CHECK YOUR EMAIL");
         setSubmitted(true);
       } else {
         setError(data.error || "Something went wrong. Please try again.");
       }
     } catch (e) {
-      setError("Could not connect to review server. Please try again.");
+      setError("Could not reach the server. Please try again.");
     } finally {
       setLoading(false);
     }
-  }
+  };
 
-  if (submitted) {
+  if (submitted && discountCode) {
     return (
       <BlockStack spacing="base">
         <Banner status="success">
-          <Text>Thank you for your review!</Text>
+          <Text emphasis="bold">Thank you for your review!</Text>
         </Banner>
-        <Text>{rewardMessage}</Text>
-        {discountCode ? (
-          <BlockStack spacing="tight">
-            <Text size="large" emphasis="bold">
-              Your discount code:
-            </Text>
-            <Text size="extraLarge" emphasis="bold">
-              {discountCode}
-            </Text>
-            <Text size="small" appearance="subdued">
-              Use this code at checkout on your next order.
-            </Text>
-          </BlockStack>
-        ) : null}
+        <Text>Here is your discount code:</Text>
+        <Text emphasis="bold" size="large">{discountCode}</Text>
+        <Text size="small">Copy this code and use it on your next order.</Text>
       </BlockStack>
     );
   }
 
   return (
     <BlockStack spacing="base">
-      <Heading>How was your order?</Heading>
-      <Text appearance="subdued">
-        Leave a review and earn a reward — get ₹200 off your next order!
-      </Text>
+      <Text emphasis="bold" size="large">Leave a Review & Earn a Discount</Text>
+      <Text size="small">Share your experience and we'll send you a discount code!</Text>
 
-      {/* Star Rating */}
+      <Text>Your rating:</Text>
       <InlineStack spacing="tight">
         {[1, 2, 3, 4, 5].map((star) => (
-          <Pressable
+          <Button
             key={star}
+            kind={rating >= star ? "primary" : "secondary"}
             onPress={() => setRating(star)}
-            accessibilityLabel={`Rate ${star} stars`}
           >
-            <Text size="extraLarge">
-              {star <= (hovered || rating) ? "★" : "☆"}
-            </Text>
-          </Pressable>
+            {String(star) + " ★"}
+          </Button>
         ))}
       </InlineStack>
 
       <TextField
-        label="Your review"
-        multiline={4}
-        placeholder="Tell others about your experience..."
-        value={reviewText}
-        onChange={(val) => setReviewText(val)}
+        label="Tell us more (optional)"
+        value={comment}
+        onChange={setComment}
+        multiline={3}
       />
 
       {error ? (
@@ -146,11 +122,10 @@ function ReviewWidget() {
 
       <Button
         kind="primary"
-        loading={loading}
         onPress={handleSubmit}
-        disabled={loading}
+        disabled={rating === 0 || loading}
       >
-        Submit Review & Get ₹200 Off
+        {loading ? "Submitting…" : "Submit Review"}
       </Button>
     </BlockStack>
   );

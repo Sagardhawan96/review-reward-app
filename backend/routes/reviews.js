@@ -8,9 +8,13 @@ const router = express.Router();
 router.post('/', upload.single('photo'), async (req, res) => {
   const { shopDomain, orderId, customerEmail, rating, reviewText } = req.body;
 
-  if (!shopDomain || !orderId || !customerEmail || !rating || !reviewText) {
+  if (!shopDomain || !orderId || !rating) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
+
+  // Normalise optional fields
+  const email = customerEmail || '';
+  const text = reviewText || '';
 
   try {
     const shop = await db.get('SELECT * FROM shops WHERE shop_domain = ?', [shopDomain]);
@@ -20,7 +24,8 @@ router.post('/', upload.single('photo'), async (req, res) => {
 
     const settings = await db.get('SELECT * FROM reward_settings WHERE shop_domain = ?', [shopDomain]);
 
-    if (reviewText.length < settings.min_review_chars) {
+    // Only enforce min_review_chars if a comment was actually provided
+    if (text.length > 0 && settings && text.length < settings.min_review_chars) {
       return res.status(400).json({ error: `Review must be at least ${settings.min_review_chars} characters` });
     }
 
@@ -35,7 +40,7 @@ router.post('/', upload.single('photo'), async (req, res) => {
 
     await db.run(
       'INSERT INTO reviews (shop_domain, order_id, customer_email, rating, review_text, photo_url, tier) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [shopDomain, orderId, customerEmail, rating, reviewText, photoUrl, tier]
+      [shopDomain, orderId, email, rating, text, photoUrl, tier]
     );
 
     const priceRuleId = tier === 2 ? shop.price_rule_tier2_id : shop.price_rule_tier1_id;
@@ -45,7 +50,7 @@ router.post('/', upload.single('photo'), async (req, res) => {
 
       await db.run(
         'INSERT INTO discount_codes (shop_domain, order_id, customer_email, code, tier, shopify_code_id, expires_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
-        [shopDomain, orderId, customerEmail, code, tier, shopifyCodeId, expiresAt]
+        [shopDomain, orderId, email, code, tier, shopifyCodeId, expiresAt]
       );
 
       const reward = tier === 2 ? `${settings.tier2_percent}% off your next order` : `₹${settings.tier1_amount} off your next order`;
