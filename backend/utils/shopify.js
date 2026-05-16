@@ -66,4 +66,13 @@ async function updatePriceRules(shopDomain, accessToken, tier1Id, tier2Id, tier1
   });
 }
 
-module.exports = { shopifyRequest, createPriceRules, updatePriceRules };
+async function createScriptTag(shopDomain, accessToken, appUrl) {
+  await shopifyRequest(shopDomain, accessToken, 'POST', '/script_tags.json', {
+    script_tag: {
+      event: 'onload',
+      src: `${appUrl}/widget.js`
+    }
+  });
+}
+
+module.exports = { shopifyRequest, createPriceRules, updatePriceRules, createScriptTag };

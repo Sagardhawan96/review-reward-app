@@ -2,7 +2,7 @@ const express = require('express');
 const crypto = require('crypto');
 const axios = require('axios');
 const db = require('../db');
-const { createPriceRules } = require('../utils/shopify');
+const { createPriceRules, createScriptTag } = require('../utils/shopify');
 
 const router = express.Router();
 
@@ -66,6 +66,14 @@ router.get('/callback', async (req, res) => {
     const existingSettings = await db.get('SELECT * FROM reward_settings WHERE shop_domain = ?', [shop]);
     if (!existingSettings) {
       await db.run('INSERT INTO reward_settings (shop_domain) VALUES (?)', [shop]);
+    }
+
+    // Inject widget script tag into the storefront
+    try {
+      await createScriptTag(shop, accessToken, APP_URL);
+      console.log(`Script tag injected for ${shop}`);
+    } catch (tagErr) {
+      console.error('Script tag injection failed:', tagErr.message);
     }
 
     console.log(`App installed for ${shop}`);
