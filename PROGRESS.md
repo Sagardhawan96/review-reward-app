@@ -11,13 +11,14 @@
 
 ```
 Last session  : 2026-05-16
-Last completed: Gate 1A ✅ PASSED — both price rules confirmed Active in Shopify Admin → Discounts
-                  "ReviewReward - Text Review (Tier 1)" — ₹200 off — Active
-                  "ReviewReward - Photo Review (Tier 2)" — 10% off — Active
-Next task     : Gate 1C — place a test order on sagar-review-test-2.myshopify.com,
-                go to order confirmation page, verify review widget appears visually.
-                Then: Phase 1D — migrate SQLite → Neon Postgres (data resets on every deploy)
-Active blocker: NONE
+Last completed: Gates 1A ✅ + 1B ✅ + 1D ✅ PASSED
+                  1A: Both price rules Active in Shopify Admin → Discounts
+                  1B: Rating breakdown chart fixed (static HTML, no template literal)
+                  1D: Neon Postgres live — review survived full Railway container teardown
+Next task     : Gate 1C — Checkout UI Extension for thank-you page widget
+                BLOCKED: Requires Sagar to run `shopify app deploy` on his Mac (Shopify CLI)
+                WHILE WAITING: Move to Phase 2A — Shopify Billing
+Active blocker: Gate 1C needs Shopify CLI on Sagar's Mac to deploy the thank-you extension
 
 WHAT WAS FIXED THIS SESSION:
 - Root cause: createPriceRules() was never called in OAuth callback (Sagar's original code)
@@ -55,12 +56,12 @@ A code starting with `TXT-` must exist there. ✅ VERIFIED 2026-05-16
 
 ---
 
-### 1B — Fix Rating Breakdown Chart
+### 1B — Fix Rating Breakdown Chart ✅ GATE PASSED 2026-05-17
 - [x] Replaced broken template literal with 5 static `<div class="rating-row">` elements
 - [x] JS populates `id="bar-1"` through `id="bar-5"` widths dynamically on load
 - [x] Dashboard file at `backend/public/index.html` — confirmed no `${n}` in source
 
-**GATE:** Open dashboard in browser, connect store — rating bars must render visually. ✅ FIXED IN CODE
+**GATE:** Open dashboard in browser, connect store — rating bars must render visually. ✅ FIXED 2026-05-17
 
 ---
 
@@ -75,15 +76,15 @@ The review form must visually appear on that page. If not, this task is NOT done
 
 ---
 
-### 1D — Fix SQLite Data Loss (Migrate to Neon Postgres)
-- [ ] Create free Neon Postgres database at neon.tech
-- [ ] Add `DATABASE_URL` environment variable to Railway
-- [ ] Replace `sqlite3` with `pg` (node-postgres) in `db.js`
-- [ ] Update all queries to use `$1, $2` parameter syntax instead of `?`
-- [ ] Test all routes still work after migration
+### 1D — Fix SQLite Data Loss (Migrate to Neon Postgres) ✅ GATE PASSED 2026-05-17
+- [x] Create free Neon Postgres database at neon.tech
+- [x] Add `DATABASE_URL` environment variable to Railway
+- [x] Replace `sqlite3` with `pg` (node-postgres) in `db.js`
+- [x] Auto-convert `?` placeholders to `$1,$2...` in db.js wrapper — all routes unchanged
+- [x] Test all routes still work after migration
 
 **GATE:** Redeploy Railway. Submit a test review. Redeploy Railway again (forcing a restart).
-Open the dashboard — the previously submitted review must still be there. If data is gone, this task is NOT done.
+✅ VERIFIED 2026-05-17 — review survived full container teardown and rebuild. Neon Postgres confirmed as persistent store.
 
 ---
 
