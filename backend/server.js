@@ -5,6 +5,7 @@ require('dotenv').config({ path: path.join(__dirname, '../.env') });
 const db = require('./db');
 
 const authRoutes = require('./routes/auth');
+const billingRoutes = require('./routes/billing');
 const reviewRoutes = require('./routes/reviews');
 const settingsRoutes = require('./routes/settings');
 const adminRoutes = require('./routes/admin');
@@ -17,6 +18,7 @@ app.use(express.static(path.join(__dirname, '../widget')));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/auth', authRoutes);
+app.use('/auth/billing', billingRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/admin', adminRoutes);

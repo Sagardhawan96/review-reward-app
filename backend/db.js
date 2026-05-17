@@ -22,9 +22,17 @@ async function initDb() {
         access_token TEXT NOT NULL,
         price_rule_tier1_id BIGINT,
         price_rule_tier2_id BIGINT,
+        billing_active BOOLEAN DEFAULT FALSE,
+        billing_charge_id TEXT,
+        billing_status TEXT DEFAULT 'none',
         installed_at TIMESTAMP DEFAULT NOW()
       )
     `);
+
+    // Add billing columns to existing shops table (safe on re-deploy)
+    await client.query(`ALTER TABLE shops ADD COLUMN IF NOT EXISTS billing_active BOOLEAN DEFAULT FALSE`);
+    await client.query(`ALTER TABLE shops ADD COLUMN IF NOT EXISTS billing_charge_id TEXT`);
+    await client.query(`ALTER TABLE shops ADD COLUMN IF NOT EXISTS billing_status TEXT DEFAULT 'none'`);
 
     await client.query(`
       CREATE TABLE IF NOT EXISTS reward_settings (

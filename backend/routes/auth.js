@@ -77,7 +77,8 @@ router.get('/callback', async (req, res) => {
     }
 
     console.log(`App installed for ${shop}`);
-    res.redirect(`https://${shop}/admin/apps`);
+    // Redirect to billing approval — merchant must subscribe before using the app
+    res.redirect(`${APP_URL}/auth/billing?shop=${shop}`);
 
   } catch (err) {
     console.error('Auth error:', err.message);
